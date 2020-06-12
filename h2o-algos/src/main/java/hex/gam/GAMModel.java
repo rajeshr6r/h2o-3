@@ -344,6 +344,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     public double[] _glm_stdErr;
     public double _glm_best_lamda_value;
     public TwoDimTable _glm_scoring_history;
+    public TwoDimTable _glm_scoring_history_early_stop;
     public TwoDimTable _coefficients_table;
     public TwoDimTable _coefficients_table_no_centering;
     public TwoDimTable _standardized_coefficient_magnitudes;

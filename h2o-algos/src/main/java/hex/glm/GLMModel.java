@@ -9,6 +9,8 @@ import hex.glm.GLMModel.GLMParameters.Link;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import water.*;
 import water.codegen.CodeGenerator;
 import water.codegen.CodeGeneratorPipeline;
@@ -19,9 +21,7 @@ import water.udf.CFuncRef;
 import water.util.*;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Created by tomasnykodym on 8/27/14.
@@ -219,6 +219,7 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
     public double[] _startval;  // for HGLM, initialize fixed and random coefficients (init_u), init_sig_u, init_sig_e
     public boolean _calc_like;
     public int[] _random_columns;
+    public int _score_iteration_interval = -1;
     // Has to be Serializable for backwards compatibility (used to be DeepLearningModel.MissingValuesHandling)
     public Serializable _missing_values_handling = MissingValuesHandling.MeanImputation;
     public double _prior = -1;
@@ -401,9 +402,7 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
     public GLMParameters() {
       this(Family.gaussian, Link.family_default);
       assert _link == Link.family_default;
-      _stopping_rounds = 3;
-      _stopping_metric = ScoreKeeper.StoppingMetric.deviance;
-      _stopping_tolerance = 1e-4;
+      _stopping_rounds = 0; // early-stopping is disabled by default
     }
 
     public GLMParameters(Family f){this(f,f.defaultLink);}
@@ -1074,6 +1073,7 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
     public String[] _coefficient_names;
     String[] _random_coefficient_names; // for HGLM
     String[] _random_column_names;
+    public ArrayList<Long> _training_time_ms = new ArrayList<>();
     public int _best_lambda_idx; // lambda which minimizes deviance on validation (if provided) or train (if not)
     public int _lambda_1se = -1; // lambda_best + sd(lambda); only applicable if running lambda search with nfold
     public int _selected_lambda_idx; // lambda which minimizes deviance on validation (if provided) or train (if not)
@@ -1087,6 +1087,18 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
     double [][] _vcov;
     private double _dispersion;
     private boolean _dispersionEstimated;
+    public ArrayList<ScoreKeeper> _scored_train;
+    public ArrayList<ScoreKeeper> _scored_valid;
+    public ArrayList<ScoreKeeper> _scored_xval;
+    public TwoDimTable _scoring_history_early_stop;
+    public ScoreKeeper[] scoreKeepers() {
+      ArrayList<ScoreKeeper> skl = new ArrayList<>();
+      ArrayList<ScoreKeeper> ska = _validation_metrics != null ? _scored_valid : (_cross_validation_metrics != null? _scored_xval:_scored_train);
+      for (ScoreKeeper sk : ska)
+        if (!sk.isEmpty())
+          skl.add(sk);
+      return skl.toArray(new ScoreKeeper[skl.size()]);
+    }
     
     public boolean hasPValues(){return _zvalues != null;}
     public double [] stdErr(){
@@ -1183,6 +1195,9 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
       else
         _global_beta=beta;
       _submodels = new Submodel[]{new Submodel(0,beta,-1,Double.NaN,Double.NaN)};
+      _scored_train = new ArrayList<ScoreKeeper>();
+      _scored_valid = new ArrayList<ScoreKeeper>();
+      _scored_xval = new ArrayList<ScoreKeeper>();
     }
     
     public GLMOutput() {_isSupervised = true; _nclasses = -1;}
@@ -1234,7 +1249,9 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
       _nclasses = glm.nclasses();
       _multinomial = glm._parms._family == Family.multinomial;
       _ordinal = (glm._parms._family == Family.ordinal);
-
+      _scored_train = new ArrayList<ScoreKeeper>();
+      _scored_valid = new ArrayList<ScoreKeeper>();
+      _scored_xval = new ArrayList<ScoreKeeper>();
     }
 
     /**
@@ -1401,7 +1418,111 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
     }
     return res;
   }
-  
+
+
+  // create scoring history table using scoreKeeper arrays scored_train, scored_xval, scored_valid
+  public TwoDimTable createScoringHistoryTable(boolean hasValidation,
+                                                      boolean hasCrossValidation) {
+    ModelCategory modelCategory = _output.getModelCategory();
+    boolean isClassifier = (modelCategory == ModelCategory.Binomial || modelCategory == ModelCategory.Multinomial
+            || modelCategory == ModelCategory.Ordinal);
+    List<String> colHeaders = new ArrayList<>();
+    List<String> colTypes = new ArrayList<>();
+    List<String> colFormat = new ArrayList<>();
+    colHeaders.add("Timestamp"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("Duration"); colTypes.add("string"); colFormat.add("%s");
+    colHeaders.add("Evaluation_Iterations"); colTypes.add("int"); colFormat.add("%d");
+    setColHeader(colHeaders, colTypes, colFormat, modelCategory, isClassifier, "Training");
+    if (hasValidation)
+      setColHeader(colHeaders, colTypes, colFormat, modelCategory, isClassifier, "Validation");
+    if (hasCrossValidation)
+      setColHeader(colHeaders, colTypes, colFormat, modelCategory, isClassifier, "Cross-Validation");
+
+    final int rows = _output._scored_train == null ? 0 : _output._scored_train.size();
+    String[] s = new String[0];
+    TwoDimTable table = new TwoDimTable(
+            "Scoring History", null,
+            new String[rows],
+            colHeaders.toArray(s),
+            colTypes.toArray(s),
+            colFormat.toArray(s),
+            "");
+    int row = 0;
+    if (null == _output._scored_train)
+      return table;
+    int iteration = 0;
+    for (ScoreKeeper si : _output._scored_train) { // fill out the table
+      int col = 0;
+      assert (row < table.getRowDim());
+      assert (col < table.getColDim());
+      DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+      long training_time_ms = _output._training_time_ms.get(row);
+      table.set(row, col++, fmt.print(training_time_ms));
+      table.set(row, col++, PrettyPrint.msecs(training_time_ms-_output._start_time, true));
+      table.set(row, col++, iteration);
+      col = setTableEntry(table, si, row, col, modelCategory, isClassifier); // entry for training dataset
+      if (hasValidation && (_output._scored_valid.size() > 0))
+        col = setTableEntry(table, _output._scored_valid.get(row), row, col, modelCategory, isClassifier);
+      if (hasCrossValidation  && (_output._scored_xval.size() > 0))
+        setTableEntry(table, _output._scored_xval.get(row), row, col, modelCategory, isClassifier);
+      row++;
+    }
+    return table;
+  }
+
+  public void setColHeader(List<String> colHeaders, List<String> colTypes, List<String> colFormat,
+                                  ModelCategory modelCategory, boolean isClassifier, String metricType) {
+    colHeaders.add(metricType+" RMSE"); colTypes.add("double"); colFormat.add("%.5f");
+    if (modelCategory == ModelCategory.Regression) {
+      colHeaders.add(metricType+" Deviance"); colTypes.add("double"); colFormat.add("%.5f");
+      colHeaders.add(metricType+" MAE"); colTypes.add("double"); colFormat.add("%.5f");
+    }
+    if (isClassifier) {
+      colHeaders.add(metricType+" LogLoss"); colTypes.add("double"); colFormat.add("%.5f");
+    }
+    if (isClassifier && (modelCategory == ModelCategory.Regression)) {
+      colHeaders.add(metricType+" r2"); colTypes.add("double"); colFormat.add("%.5f");
+    }
+    if (modelCategory == ModelCategory.Binomial) {
+      colHeaders.add(metricType+" AUC"); colTypes.add("double"); colFormat.add("%.5f");
+      colHeaders.add(metricType+" pr_auc"); colTypes.add("double"); colFormat.add("%.5f");
+      colHeaders.add(metricType+" Lift"); colTypes.add("double"); colFormat.add("%.5f");
+    }
+    if (isClassifier) {
+      colHeaders.add(metricType+" Classification Error"); colTypes.add("double"); colFormat.add("%.5f");
+    }
+    if (modelCategory == ModelCategory.Multinomial) {
+      colHeaders.add(metricType+" Mean Per Class Error"); colTypes.add("double"); colFormat.add("%.5f");
+    }
+  }
+
+  public int setTableEntry(TwoDimTable table, ScoreKeeper scored_metric, int row, int col,
+                                  ModelCategory modelCategory, boolean isClassifier) {
+    table.set(row, col++, scored_metric != null ? scored_metric._rmse : Double.NaN);
+    if (modelCategory == ModelCategory.Regression) {
+      table.set(row, col++, scored_metric != null ? scored_metric._mean_residual_deviance : Double.NaN);
+      table.set(row, col++, scored_metric != null ? scored_metric._mae : Double.NaN);
+    }
+    if (isClassifier) {
+      table.set(row, col++, scored_metric != null ? scored_metric._logloss : Double.NaN);
+    }
+    if (isClassifier && (modelCategory == ModelCategory.Regression)) {
+      table.set(row, col++, scored_metric != null ? scored_metric._r2 : Double.NaN);
+    }
+    if (modelCategory == ModelCategory.Binomial) {
+      table.set(row, col++, scored_metric != null ? scored_metric._AUC : Double.NaN);
+      table.set(row, col++, scored_metric != null ? scored_metric._pr_auc : Double.NaN);
+      table.set(row, col++, scored_metric != null ? scored_metric._lift : Double.NaN);
+    }
+    if (isClassifier) {
+      table.set(row, col++, scored_metric != null ? scored_metric._classError : Double.NaN);
+    }
+    if (modelCategory == ModelCategory.Multinomial) {
+      table.set(row, col++, scored_metric != null ? scored_metric._mean_per_class_error : Double.NaN);
+    }
+
+    return col;
+  }
   
   // TODO: Shouldn't this be in schema? have it here for now to be consistent with others...
   /**

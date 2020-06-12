@@ -38,7 +38,8 @@ public class GamUtils {
     return array3D;
   }
 
-  public static enum AllocateType {firstOneLess, sameOrig, bothOneLess, firstTwoLess} // special functions are performed depending on GLMType.  Internal use
+  public static enum 
+  AllocateType {firstOneLess, sameOrig, bothOneLess, firstTwoLess} // special functions are performed depending on GLMType.  Internal use
 
   public static Integer[] sortCoeffMags(int arrayLength, double[] coeffMags) {
     Integer[] indices = new Integer[arrayLength];

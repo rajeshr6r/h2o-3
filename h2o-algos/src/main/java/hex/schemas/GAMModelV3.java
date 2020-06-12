@@ -1,10 +1,10 @@
 package hex.schemas;
 
 import hex.gam.GAMModel;
+import water.api.API;
+import water.api.schemas3.ModelOutputSchemaV3;
 import water.api.schemas3.ModelSchemaV3;
 import water.api.schemas3.TwoDimTableV3;
-import water.api.schemas3.ModelOutputSchemaV3;
-import water.api.API;
 
 public class GAMModelV3 extends ModelSchemaV3<GAMModel, GAMModelV3, GAMModel.GAMParameters, GAMV3.GAMParametersV3,
         GAMModel.GAMModelOutput, GAMModelV3.GAMModelOutputV3> {
@@ -17,6 +17,9 @@ public class GAMModelV3 extends ModelSchemaV3<GAMModel, GAMModelV3, GAMModel.GAM
 
     @API(help="GLM scoring history")
     TwoDimTableV3 glm_scoring_history;
+
+    @API(help="GLM scoring history")
+    TwoDimTableV3 glm_scoring_history_early_stop;
     
     @API(help = "GLM model summary")
     TwoDimTableV3 glm_model_summary;
