@@ -262,7 +262,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     public boolean _savePenaltyMat = false; // if true will save penalty matrices as tripple array
 
     public String algoName() { return "GAM"; }
-    public String fullName() { return "General Additive Model"; }
+    public String fullName() { return "Generalized Additive Model"; }
     public String javaName() { return GAMModel.class.getName(); }
 
     @Override
@@ -361,6 +361,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     private double[] _zvalues;
     private double _dispersion;
     private boolean _dispersionEstimated;
+    public String[][] _gamColNames; // store gam column names after transformation and decentering
     public double[][][] _zTranspose; // Z matrix for de-centralization, can be null
     public double[][][] _penaltyMatrices_center; // stores t(Z)*t(D)*Binv*D*Z and can be null
     public double[][][] _penaltyMatrices;          // store t(D)*Binv*D and can be null
@@ -692,6 +693,11 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
   @Override
   public double[] score0(double[] data, double[] preds) {
     throw new UnsupportedOperationException("GAMModel.score0 should never be called");
+  }
+
+  @Override
+  public GAMMojoWriter getMojo() {
+    return new GAMMojoWriter(this);
   }
 
   @Override

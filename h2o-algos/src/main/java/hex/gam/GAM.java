@@ -59,7 +59,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
 
   @Override
   public boolean haveMojo() {
-    return false;
+    return true;
   }
 
   public GAM(boolean startup_once) {
@@ -442,6 +442,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
     void fillOutGAMModel(GLMModel glm, GAMModel model, DataInfo dinfo) {
       model._gamColNamesNoCentering = _gamColNames;  // copy over gam column names
       model._gamColNames = _gamColNamesCenter;
+      model._output._gamColNames = _gamColNamesCenter;
       model._output._zTranspose = _zTranspose;
       model._gamFrameKeysCenter = _gamFrameKeysCenter;
       model._nclass = _nclass;
