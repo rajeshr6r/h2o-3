@@ -355,7 +355,8 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
       Frame newValidFrame = _valid==null?null:new Frame(_valid);
       
       DKV.put(newTFrame); // This one will cause deleted vectors if add to Scope.track
-      DKV.put(newValidFrame);
+      if (newValidFrame != null)
+        DKV.put(newValidFrame);
       _job.update(0, "Initializing model training");
       buildModel(newTFrame, newValidFrame); // build gam model 
     }
