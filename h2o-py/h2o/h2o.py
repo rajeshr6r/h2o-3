@@ -2211,20 +2211,6 @@ def print_mojo(mojo_path, format="json", tree_index=None):
     else:
         raise H2OError("Unable to print MOJO: %s" % output)
 
-def set_system_property(property, value):
-    """
-    Set the specified system property to specified value 
-
-    :param property: system property to be set
-    :param value: value to be set
-
-    :example:
-
-    >>> h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false")
-    """
-    p = { "property": property, "value": value}
-    api("POST /3/SetSystemProperty", data=p)
-
 #-----------------------------------------------------------------------------------------------------------------------
 # Private
 #-----------------------------------------------------------------------------------------------------------------------

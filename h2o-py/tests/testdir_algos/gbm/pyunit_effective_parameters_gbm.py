@@ -14,7 +14,7 @@ from h2o.estimators.gbm import H2OGradientBoostingEstimator
 #fold_assignment (available in: GBM, DRF, Deep Learning, GLM, Naïve-Bayes, K-Means, XGBoost)
 
 def test_gbm_effective_parameters():
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
     cars = h2o.import_file(path=pyunit_utils.locate("smalldata/junit/cars_20mpg.csv"))
     cars["economy_20mpg"] = cars["economy_20mpg"].asfactor()
     cars["year"] = cars["year"].asfactor()
@@ -58,13 +58,13 @@ def test_gbm_effective_parameters():
     assert gbm1.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert gbm1.parms['categorical_encoding']['actual_value'] == gbm2.parms['categorical_encoding']['actual_value']
 
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", False)
 
-    gbm1 = H2OGradientBoostingEstimator(seed = 1234, nfolds=5, evaluate_auto=False)
+    gbm1 = H2OGradientBoostingEstimator(seed = 1234, nfolds=5)
     gbm1.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
 
     gbm2 = H2OGradientBoostingEstimator(seed = 1234, nfolds=5, fold_assignment='Random', distribution="bernoulli",
-                                    histogram_type="UniformAdaptive", categorical_encoding="Enum", evaluate_auto=False)
+                                    histogram_type="UniformAdaptive", categorical_encoding="Enum")
     gbm2.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
 
     assert gbm1.logloss() == gbm2.logloss()
@@ -80,7 +80,7 @@ def test_gbm_effective_parameters():
     assert gbm1.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert gbm1.parms['categorical_encoding']['actual_value'] == 'AUTO'
 
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
 
     frame = h2o.import_file(path=pyunit_utils.locate("smalldata/prostate/prostate.csv"))
     frame.pop('ID')

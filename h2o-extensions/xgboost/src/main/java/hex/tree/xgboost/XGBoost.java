@@ -375,7 +375,7 @@ public class XGBoost extends ModelBuilder<XGBoostModel,XGBoostModel.XGBoostParam
         model._output._sparse = isTrainDatasetSparse();
       }
       
-      if (Model.evaluateAutoModelParameters()) {
+      if (Model.evalAutoParamsEnabled) {
         model.initActualParamValuesAfterOutputSetup(isClassifier(), _nclass);
       }
 

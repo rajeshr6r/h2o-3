@@ -52,6 +52,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
         implements StreamWriter {
 
   public static final String EVAL_AUTO_PARAMS_ENABLED = H2O.OptArgs.SYSTEM_PROP_PREFIX + "algos.evaluate_auto_model_parameters";
+  public static boolean evalAutoParamsEnabled = true;
 
   public P _parms;   // TODO: move things around so that this can be protected
   public P _input_parms;
@@ -79,6 +80,15 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
 
     return models;
   }
+
+  /**
+   * Whether to evaluate input parameters of value AUTO.
+   */
+  public static boolean evaluateAutoModelParameters() {
+    return Boolean.parseBoolean(System.getProperty(EVAL_AUTO_PARAMS_ENABLED, "true"));
+  }
+
+
 
   public void setInputParms(P _input_parms) {
     this._input_parms = _input_parms;
@@ -1017,7 +1027,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     super(selfKey);
     assert parms != null;
     _parms = parms;
-    if (evaluateAutoModelParameters()) {
+    evalAutoParamsEnabled = evaluateAutoModelParameters();
+    if (evalAutoParamsEnabled) {
       initActualParamValues();
     }
     _output = output;  // Output won't be set if we're assert output != null;
@@ -1028,13 +1039,6 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   }
 
   public void initActualParamValues() {}
-  
-  /**
-   * Whether to evaluate input parameters of value AUTO.
-   */
-  public static boolean evaluateAutoModelParameters() {
-      return Boolean.parseBoolean(System.getProperty(EVAL_AUTO_PARAMS_ENABLED, "true"));
-  }
   
   /**
    * Deviance of given distribution function at predicted value f

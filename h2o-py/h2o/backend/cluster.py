@@ -297,6 +297,21 @@ class H2OCluster(object):
         return h2o.H2OFrame._expr(expr=ExprNode("listTimeZones"))._frame()
 
 
+
+    def set_feature_flag(feature, enable=None):
+        """
+        Enable/disable specific feature.
+        
+        :param feature: a feature as listed in :const:`feature_flags` keys.
+        :param enable: a boolean whether to enable the feature
+        """
+        assert feature in feature_flags
+        key, def_value = feature_flags[feature]
+        value = def_value if enable is None else enable
+        value = "true" if value else "false"
+        p = {"property": key, "value": value}
+        h2o.api("POST /3/SetFeatureFlag", data=p)
+
     #-------------------------------------------------------------------------------------------------------------------
     # Private
     #-------------------------------------------------------------------------------------------------------------------
@@ -382,3 +397,7 @@ _cloud_v3_valid_keys = {"is_client", "build_number", "cloud_name", "locked", "no
                         "version", "last_commit_hash", "describe", "compiled_by", "compiled_on", "cloud_uptime_millis",
                         "cloud_internal_timezone", "datafile_parser_timezone", "cloud_healthy", "bad_nodes", "cloud_size", "skip_ticks",
                         "nodes", "build_age", "build_too_old", "internal_security_enabled", "leader_idx"}
+
+feature_flags = dict(
+    enable_evaluation_of_auto_model_parameters = ("algos.evaluate_auto_model_parameters", True)
+)

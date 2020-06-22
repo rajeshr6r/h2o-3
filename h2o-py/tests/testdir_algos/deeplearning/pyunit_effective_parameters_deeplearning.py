@@ -16,7 +16,7 @@ from h2o.estimators.deeplearning import H2ODeepLearningEstimator
 #fold_assignment (available in: GBM, DRF, Deep Learning, GLM, Naïve-Bayes, K-Means, XGBoost)
 
 def test_deep_learning_effective_parameters():
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
     train_data = h2o.import_file(path=tests.locate("smalldata/gbm_test/ecology_model.csv"))
     train_data = train_data.drop('Site')
     train_data['Angaus'] = train_data['Angaus'].asfactor()
@@ -41,7 +41,7 @@ def test_deep_learning_effective_parameters():
     assert dl1.parms['fold_assignment']['input_value'] == 'AUTO'
     assert dl1.parms['fold_assignment']['actual_value'] is None
 
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", False)
 
     dl1 = H2ODeepLearningEstimator(loss="CrossEntropy", epochs=1000, hidden=[20,20,20], seed=1234, reproducible=True, 
                                    stopping_rounds=5)
@@ -61,7 +61,7 @@ def test_deep_learning_effective_parameters():
     assert dl1.parms['fold_assignment']['input_value'] == 'AUTO'
     assert dl1.parms['fold_assignment']['actual_value'] == 'AUTO'
 
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
 
     dl1 = H2ODeepLearningEstimator(loss="CrossEntropy", epochs=1000, hidden=[20,20,20], seed=1234, reproducible=True, nfolds=5)
     dl1.train(x=list(range(1,train_data.ncol)), y="Angaus", training_frame=train_data, validation_frame=test_data)

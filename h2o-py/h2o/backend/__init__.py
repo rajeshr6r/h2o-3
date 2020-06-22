@@ -59,4 +59,4 @@ elif StrictVersion(colorama.__version__) < StrictVersion("0.3.8"):
           "    $ pip%s install --upgrade colorama" % (colorama.__version__, sys.version_info[0]))
     sys.exit(1)
     
-__all__ = ("H2OCluster", "H2OConnection", "H2OLocalServer", "H2OConnectionConf")
+__all__ = ("H2OCluster", "H2OConnection", "H2OLocalServer", "H2OConnectionConf", "set_feature_flag", "feature_flags")

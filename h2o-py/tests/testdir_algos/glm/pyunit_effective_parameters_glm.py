@@ -16,7 +16,7 @@ from h2o.estimators.glm import H2OGeneralizedLinearEstimator
 
 
 def test_glm_effective_parameters():
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
     cars = h2o.import_file(path=pyunit_utils.locate("smalldata/junit/cars_20mpg.csv"))
     predictors = ["displacement","power","weight","acceleration","year"]
     response_col = "economy_20mpg"
@@ -29,7 +29,7 @@ def test_glm_effective_parameters():
     assert glm.parms['fold_assignment']['input_value'] == 'AUTO'
     assert glm.parms['fold_assignment']['actual_value'] == 'Random'
 
-    h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false")
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", False)
     glm = H2OGeneralizedLinearEstimator(nfolds=nfolds, family=family)
     glm.train(x=predictors, y=response_col, training_frame=cars)
     assert glm.parms['fold_assignment']['input_value'] == 'AUTO'

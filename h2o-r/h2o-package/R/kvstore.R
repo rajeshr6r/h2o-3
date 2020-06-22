@@ -552,21 +552,45 @@ h2o.download_model <- function(model, path=NULL) {
     return(paste0(file_path))
 }
 
+h2o.feature_flags <- function() {
+    feature_flags <- list()
+    enable_evaluation_of_auto_model_parameters <- list()
+    enable_evaluation_of_auto_model_parameters$short <- "enable_evaluation_of_auto_model_parameters"
+    enable_evaluation_of_auto_model_parameters$property <- "algos.evaluate_auto_model_parameters"
+    enable_evaluation_of_auto_model_parameters$value <- TRUE
+    feature_flags[[1]] <- enable_evaluation_of_auto_model_parameters
+    return(feature_flags)
+}
+
 #'
-#' Set System Property
-#'
-#' Set the specified system property to specified value
+#' Enable/disable specific feature.
 #'
 #' For example, 
-#'     h2o.set_system_property("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false")
+#'     h2o.set_feature_flag("enable_evaluation_of_auto_model_parameters", TRUE)
 #'
-#' @param property system property to be set
-#' @param value value to be set
+#' @param feature a feature as listed in :const:`feature_flags` keys.
+#' @param enable a boolean whether to enable the feature
 #' @export
-h2o.set_system_property <- function(property, value) {
-parms <- list()
-parms$property <- property
-parms$value <- value
-    
-res <- .h2o.__remoteSend('SetSystemProperty', method = "POST", .params = parms, h2oRestApiVersion = 3)
+h2o.set_feature_flag <- function(feature, enable=NULL) {
+    print(feature)
+    feature_flags = h2o.feature_flags()
+    found = NULL
+    for (i in 1:length(feature_flags)) {
+        if (feature == feature_flags[[i]]$short)
+            found <- i
+    }
+    if (is.null(found)) {
+        stop(paste0("Trying to set unsupported feature flag."))
+    } else {
+        parms <- list()
+        parms$property <- feature_flags[[i]]$property
+        def_value <- feature_flags[[i]]$value
+        if (!is.null(enable)) {
+            value = enable
+        } else {
+            value = def_value
+        }
+        parms$value <- value
+        res <- .h2o.__remoteSend('SetFeatureFlag', method = "POST", .params = parms, h2oRestApiVersion = 3)
+    }
 }
