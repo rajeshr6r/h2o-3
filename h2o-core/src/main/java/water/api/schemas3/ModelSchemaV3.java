@@ -33,9 +33,6 @@ public class ModelSchemaV3<
   // Output fields
   @API(help="The build parameters for the model (e.g. K for KMeans).", direction=API.Direction.OUTPUT)
   public PS parameters;
-
-  @API(help="The input parameters for the model (what was actually used, when parameter was not specified/was specified as AUTO).", direction=API.Direction.OUTPUT)
-  private PS input_parameters;
   
   @API(help="The build output for the model (e.g. the cluster centers for KMeans).", direction=API.Direction.OUTPUT)
   public OS output;
@@ -45,6 +42,8 @@ public class ModelSchemaV3<
 
   @API(help="Checksum for all the things that go into building the Model.", direction=API.Direction.OUTPUT)
   protected long checksum;
+
+  private PS input_parameters;
 
   public ModelSchemaV3() {}
   public ModelSchemaV3(M m) {

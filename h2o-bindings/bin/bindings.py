@@ -360,8 +360,8 @@ def schemas_map(add_generics=False):
     if add_generics:
         for base, generics in [
             # Note: derived classes must come before base classes here
-            ("SharedTreeModelV3", [("P", "ModelParametersSchemaV3"), ("PS", "ModelParametersSchemaV3"), ("O", "ModelOutputSchemaV3")]),
-            ("ModelSchemaV3", [("P", "ModelParametersSchemaV3"), ("PS", "ModelParametersSchemaV3"), ("O", "ModelOutputSchemaV3")]),
+            ("SharedTreeModelV3", [("P", "ModelParametersSchemaV3"), ("O", "ModelOutputSchemaV3")]),
+            ("ModelSchemaV3", [("P", "ModelParametersSchemaV3"), ("O", "ModelOutputSchemaV3")]),
             ("SharedTreeV3", [("P", "ModelParametersSchemaV3")]),
             ("ModelBuilderSchema", [("P", "ModelParametersSchemaV3")]),
         ]:
