@@ -141,7 +141,6 @@ public class GLMTest  extends TestUtil {
       params._standardize=true;
       params._response_column = responseColumn;
       params._train = train._key;
-      GLMParameters paramsInitialClone = (GLMParameters) params.clone();
       GLMModel glm = new GLM(params).trainModel().get();
       Scope.track_generic(glm);
       
@@ -163,7 +162,6 @@ public class GLMTest  extends TestUtil {
         countIndex++;
       }
 
-      params = (GLMParameters) paramsInitialClone.clone();
       params._standardize = false;  // build a model on non-standardized columns with no standardization.
       GLMModel glmF = new GLM(params).trainModel().get();
       Scope.track_generic(glmF);
@@ -216,7 +214,6 @@ public class GLMTest  extends TestUtil {
       DKV.put(train);
       Scope.track(train);
 
-      params = (GLMParameters) paramsInitialClone.clone();
       params._standardize=false;
       params._train = train._key;
       GLMModel glmS = new GLM(params).trainModel().get();

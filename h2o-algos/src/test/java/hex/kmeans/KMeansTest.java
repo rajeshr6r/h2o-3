@@ -134,7 +134,6 @@ public class KMeansTest extends TestUtil {
       parms._max_iterations = 20;
       parms._standardize = true;
       parms._estimate_k = true;
-      KMeansModel.KMeansParameters parmsInitialClone = (KMeansModel.KMeansParameters) parms.clone();
       kmm = doSeed(parms,0);
 
       for (int i=0;i<kmm._output._centers_raw.length;++i) {
@@ -143,14 +142,13 @@ public class KMeansTest extends TestUtil {
       Assert.assertEquals("expected 5 centroids", 5, kmm._output._k[kmm._output._k.length-1]);
       double auto = kmm._output._tot_withinss;
 
-      parmsInitialClone._estimate_k = false;
-      parmsInitialClone._k = kmm._output._k[kmm._output._k.length-1];
+      parms._estimate_k = false;
+      parms._k = kmm._output._k[kmm._output._k.length-1];
 
       Random rnd = RandomUtils.getRNG(1234);
       double manual = 0;
       double N = 10;
       for (int i=0;i<N;++i) {
-        parms = (KMeansModel.KMeansParameters) parmsInitialClone.clone();
         kmm2 = doSeed(parms, rnd.nextLong());
         manual += kmm2._output._tot_withinss;
         Assert.assertEquals("expected 5 centroids", 5, kmm2._output._k[kmm2._output._k.length - 1]);

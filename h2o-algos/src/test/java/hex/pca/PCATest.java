@@ -105,14 +105,13 @@ public class PCATest extends TestUtil {
       pcaParameters._transform = DataInfo.TransformType.NONE;
       pcaParameters._pca_method = PCAParameters.Method.GramSVD;
       pcaParameters._seed = 12345;
-      PCAParameters pcaParameters2 = (PCAParameters) pcaParameters.clone(); 
       modelNok = new PCA(pcaParameters).trainModel().get();
       Scope.track_generic(modelNok);
       score = modelNok.score(train);
       Scope.track(score);
 
-      pcaParameters2._k=1;
-      modelK = new PCA(pcaParameters2).trainModel().get();
+      pcaParameters._k=1;
+      modelK = new PCA(pcaParameters).trainModel().get();
       Scope.track_generic(modelK);
       scoreK = modelK.score(train);
       Scope.track(scoreK);

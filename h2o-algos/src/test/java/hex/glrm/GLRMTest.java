@@ -656,14 +656,13 @@ public class GLRMTest extends TestUtil {
       parms._regularization_x = GlrmRegularizer.Quadratic;
       parms._regularization_y = GlrmRegularizer.Quadratic;
       parms._recover_svd = true;
-      GLRMParameters paramsInitialClone = (GLRMParameters) parms.clone(); 
       GLRM glrmParms = new GLRM(parms);
       modelN = glrmParms.trainModel().get();
       scoreN = modelN.score(train);
       Scope.track(scoreN);
       Scope.track_generic(modelN);
 
-      GLRM glrmParmsW = new GLRM(paramsInitialClone);
+      GLRM glrmParmsW = new GLRM(parms);
       glrmParmsW.setWideDataset(true);  // force to treat dataset as wide even though it is not.
       modelW = glrmParmsW.trainModel().get();
       scoreW = modelW.score(train);
