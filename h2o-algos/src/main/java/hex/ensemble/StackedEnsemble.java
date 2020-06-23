@@ -328,7 +328,7 @@ public class StackedEnsemble extends ModelBuilder<StackedEnsembleModel,StackedEn
         throw new H2OIllegalArgumentException("Invalid `metalearner_algorithm`. Passed in " + metalearnerAlgoSpec +
                 " but must be one of " + Arrays.toString(Metalearner.Algorithm.values()));
       }
-      if (Model.evalAutoParamsEnabled && _model._parms._metalearner_algorithm == Metalearner.Algorithm.AUTO)
+      if (_model.evalAutoParamsEnabled && _model._parms._metalearner_algorithm == Metalearner.Algorithm.AUTO)
         _model._parms._metalearner_algorithm = metalearnerAlgoImpl;
     } // computeImpl
   }
