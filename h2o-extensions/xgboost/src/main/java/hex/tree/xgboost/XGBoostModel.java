@@ -251,7 +251,7 @@ public class XGBoostModel extends Model<XGBoostModel, XGBoostModel.XGBoostParame
         } else {
           return XGBoostModel.XGBoostParameters.TreeMethod.approx;
         }
-      } else if (p.train().numRows() >= (4 << 20)) {
+      } else if (p.train() != null && p.train().numRows() >= (4 << 20)) {
         return XGBoostModel.XGBoostParameters.TreeMethod.approx;
       } else {
         return XGBoostModel.XGBoostParameters.TreeMethod.exact;
