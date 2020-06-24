@@ -13,10 +13,8 @@ import hex.genmodel.easy.prediction.*;
 import hex.genmodel.utils.DistributionFamily;
 import hex.quantile.QuantileModel;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import water.*;
 import water.api.ModelsHandler;
-import water.api.RestApiExtension;
 import water.api.StreamWriter;
 import water.api.StreamingSchema;
 import water.api.schemas3.KeyV3;
@@ -25,7 +23,6 @@ import water.codegen.CodeGeneratorPipeline;
 import water.exceptions.JCodeSB;
 import water.fvec.*;
 import water.parser.BufferedString;
-import water.parser.ParseTime;
 import water.persist.Persist;
 import water.udf.CFuncRef;
 import water.util.*;
@@ -1083,37 +1080,32 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
 
   // Lower is better
   public float loss() {
-    if (_parms._stopping_metric == null) {
-      return (float) (_output.isClassifier() ? logloss() : _output.isAutoencoder() ? mse() : deviance());
-    } else {
-      switch (_parms._stopping_metric) {
-        case MSE:
-          return (float) mse();
-        case MAE:
-          return (float) mae();
-        case RMSLE:
-          return (float) rmsle();
-        case logloss:
-          return (float) logloss();
-        case deviance:
-          return (float) deviance();
-        case misclassification:
-          return (float) classification_error();
-        case AUC:
-          return (float)(1-auc());
-        case AUCPR:
-          return (float)(1-AUCPR());
-  /*      case r2:
-          return (float)(1-r2());*/
-        case mean_per_class_error:
-          return (float)mean_per_class_error();
-        case lift_top_group:
-          return (float)lift_top_group();
-        case AUTO:
-        default:
-          return (float) (_output.isClassifier() ? logloss() : _output.isAutoencoder() ? mse() : deviance());
-  
-      }
+    switch (Optional.ofNullable(_parms._stopping_metric).orElse(ScoreKeeper.StoppingMetric.AUTO)) {
+      case MSE:
+        return (float) mse();
+      case MAE:
+        return (float) mae();
+      case RMSLE:
+        return (float) rmsle();
+      case logloss:
+        return (float) logloss();
+      case deviance:
+        return (float) deviance();
+      case misclassification:
+        return (float) classification_error();
+      case AUC:
+        return (float)(1-auc());
+      case AUCPR:
+        return (float)(1-AUCPR());
+/*      case r2:
+        return (float)(1-r2());*/
+      case mean_per_class_error:
+        return (float)mean_per_class_error();
+      case lift_top_group:
+        return (float)lift_top_group();
+      case AUTO:
+      default:
+        return (float) (_output.isClassifier() ? logloss() : _output.isAutoencoder() ? mse() : deviance());
     }
   } // loss()
 
