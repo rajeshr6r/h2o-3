@@ -49,7 +49,6 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
         implements StreamWriter {
 
   public static final String EVAL_AUTO_PARAMS_ENABLED = H2O.OptArgs.SYSTEM_PROP_PREFIX + "algos.evaluate_auto_model_parameters";
-  public static boolean evalAutoParamsEnabled = true;
 
   public P _parms;   // TODO: move things around so that this can be protected
   public P _input_parms;
@@ -59,6 +58,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   public Distribution _dist;
   protected ScoringInfo[] scoringInfo;
   public IcedHashMap<Key, String> _toDelete = new IcedHashMap<>();
+  public boolean evalAutoParamsEnabled;
 
 
   public static Model[] fetchAll() {

@@ -378,12 +378,9 @@ def schemas_map(add_generics=False):
                 if ftype in generic_map:
                     gen_type = generic_map[ftype]
                     if len(gen_type) > 1:
-                        field["schema_name"] = gen_type[0]
-                        mapped_fields[field["name"]] = generic_index[gen_type[0]]
-                        gen_type.pop(0)
-                    else:    
-                        field["schema_name"] = gen_type[0]
-                        mapped_fields[field["name"]] = generic_index[gen_type[0]]
+                        gen_type.pop(0) 
+                    field["schema_name"] = gen_type[0]
+                    mapped_fields[field["name"]] = generic_index[gen_type[0]]
             assert len(mapped_fields) == len(generics), (
                 "Unable to find generic types %r in base class %s. Schema: %r" %
                 (generic_map, base, {f["name"]: f["schema_name"] for f in schema["fields"]}))
