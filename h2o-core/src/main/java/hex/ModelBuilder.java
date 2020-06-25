@@ -312,6 +312,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
   public Job<M> trainModelOnH2ONode() {
     if (error_count() > 0)
       throw H2OModelBuilderIllegalArgumentException.makeFromBuilder(this);
+    this._input_parms = (P) this._parms.clone();
     TrainModelRunnable trainModel = new TrainModelRunnable(this);
     H2O.runOnH2ONode(trainModel);
     return _job;
@@ -322,18 +323,20 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     private Job<Model> _job;
     private Key<Model> _key;
     private Model.Parameters _parms;
+    private Model.Parameters _input_parms;
     @SuppressWarnings("unchecked")
     private TrainModelRunnable(ModelBuilder mb) {
       _mb = mb;
       _job = (Job<Model>) _mb._job;
       _key = _job._result;
       _parms = _mb._parms;
-      _mb._input_parms = _parms.clone();
+      _input_parms = _mb._input_parms;
     }
     @Override
     public void setupOnRemote() {
       _mb = ModelBuilder.make(_parms.algoName(), _job, _key);
       _mb._parms = _parms;
+      _mb._input_parms = _input_parms;
       _mb.init(false); // validate parameters
     }
     @Override
