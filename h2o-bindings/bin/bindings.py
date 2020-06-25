@@ -368,19 +368,15 @@ def schemas_map(add_generics=False):
             # Write the generic information about the base class
             schema = m[base]
             schema["generics"] = generics
-            generic_map = defaultdict(list)
-            for name, schema_name in generics:
-                generic_map[schema_name].append(name)     
+            generic_map = {long_type: gen_type for gen_type, long_type in generics}
             generic_index = {geninfo[0]: i for i, geninfo in enumerate(generics)}
             mapped_fields = {}
             for field in schema["fields"]:
                 ftype = field["schema_name"]
                 if ftype in generic_map:
                     gen_type = generic_map[ftype]
-                    if len(gen_type) > 1:
-                        gen_type.pop(0) 
-                    field["schema_name"] = gen_type[0]
-                    mapped_fields[field["name"]] = generic_index[gen_type[0]]
+                    field["schema_name"] = gen_type
+                    mapped_fields[field["name"]] = generic_index[gen_type]
             assert len(mapped_fields) == len(generics), (
                 "Unable to find generic types %r in base class %s. Schema: %r" %
                 (generic_map, base, {f["name"]: f["schema_name"] for f in schema["fields"]}))
@@ -514,4 +510,3 @@ def _request_or_exit(endpoint):
 def _report_time():
     if config["start_time"]:
         print("done (in %.3fs)" % (time.time() - config["start_time"]))
-
