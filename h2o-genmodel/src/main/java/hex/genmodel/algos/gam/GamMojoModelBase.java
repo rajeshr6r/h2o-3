@@ -1,11 +1,14 @@
 package hex.genmodel.algos.gam;
 
+import hex.genmodel.GenModel;
 import hex.genmodel.MojoModel;
 
 public abstract class GamMojoModelBase extends MojoModel {
+  String _link;
   boolean _useAllFactorLevels;
   int _cats;
   int[] _catNAFills;
+  int[] _catOffsets;
   int _nums;
   double[] _numNAFills;
   boolean _meanImputation;
@@ -28,6 +31,7 @@ public abstract class GamMojoModelBase extends MojoModel {
   int _totFeatureSize; // number of predictors plus gam columns no centered
   int _betaSizePerClass;
   int _betaCenterSizePerClass;
+  double _tweedieLinkPower;
   
   public int get_totFeatureSize() { return _totFeatureSize;}
   
@@ -52,5 +56,26 @@ public abstract class GamMojoModelBase extends MojoModel {
       if (Double.isNaN(data[ind])) data[ind] = _catNAFills[ind];
     for (int ind=0; ind < _nums; ind++)
       if (Double.isNaN(data[ind+_cats])) data[ind] = _numNAFills[ind];
+  }
+  
+  double evalLink(double val, String linkType) {
+    switch (linkType) {
+      case "identity": return GenModel.GLM_identityInv(val);
+      case "logit": return GenModel.GLM_logitInv(val);
+      case "log": return GenModel.GLM_logInv(val);
+      case "inverse": return GenModel.GLM_inverseInv(val);
+      case "tweedie": return GenModel.GLM_tweedieInv(val, _tweedieLinkPower);
+      default: throw new UnsupportedOperationException("Unexpected link function "+linkType);
+    }
+  }
+
+  // This method will read in categorical value and adjust for when useAllFactorLevels = true or false
+  int readCatVal(double data, int dataIndex) {
+    int ival = _useAllFactorLevels?((int) data):((int) data-1);
+    double targetVal = _useAllFactorLevels?(data):(data-1);
+    if (ival != targetVal) throw new IllegalArgumentException("categorical value out of range");
+
+    ival += _catOffsets[dataIndex];
+    return ival;
   }
 }

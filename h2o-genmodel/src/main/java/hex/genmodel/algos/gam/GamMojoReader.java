@@ -20,6 +20,9 @@ public class GamMojoReader extends ModelMojoReader<GamMojoModelBase> {
     _model._numNAFills = readkv("numNAFills", new double[0]);
     _model._meanImputation = readkv("mean_imputation", false);
     _model._betaSizePerClass = readkv("beta length per class",0);
+    _model._catOffsets = readkv("cat_offsets", new int[0]);
+    _model._link = readkv("link");
+    _model._tweedieLinkPower = readkv("tweedie_link_power", 0.0);
     _model._betaCenterSizePerClass = readkv("beta center length per class", 0);
     if ((_model._family == "multinomial") || (_model._family == "ordinal")) {
       _model._beta_multinomial_no_center = read2DArray("beta_multinomial", _model._nclasses, _model._betaSizePerClass);
@@ -96,7 +99,11 @@ public class GamMojoReader extends ModelMojoReader<GamMojoModelBase> {
 
   @Override
   protected GamMojoModelBase makeModel(String[] columns, String[][] domains, String responseColumn) {
-    return new GamMojoModel(columns, domains, responseColumn);
+    String family = readkv("family");
+    if ("multinomial".equals(family) || "ordinal".equals(family))
+      return new GamMojoMultinomialModel(columns, domains, responseColumn);
+    else
+      return new GamMojoModel(columns, domains, responseColumn);
   }
 
   @Override
