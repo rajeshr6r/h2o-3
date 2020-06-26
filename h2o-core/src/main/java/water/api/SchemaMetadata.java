@@ -9,6 +9,7 @@ import water.exceptions.H2OIllegalArgumentException;
 import water.util.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -203,8 +204,9 @@ public final class SchemaMetadata extends Iced {
 
       if (null != f.getAnnotation(API.class))
         return new FieldMetadata(schema, f, superclassFields);
-
-      Log.warn("Skipping field that lacks an annotation: " + schema.toString() + "." + f);
+      if (!(Modifier.isPrivate(f.getModifiers()))) { // don't warn in case of private field without annotation
+        Log.warn("Skipping field that lacks an annotation: " + schema.toString() + "." + f);
+      }
       return null;
     }
 
