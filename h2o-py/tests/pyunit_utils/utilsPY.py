@@ -3219,13 +3219,7 @@ def model_seed_sorted(model_list):
             if model_list.models[index]._model_json["parameters"][pIndex]["name"]=="seed":
                 model_seed_list[index]=model_list.models[index]._model_json["parameters"][pIndex]["actual_value"]
                 break
-    print("model seed list before sort: ")
-    model_seed_list_string = ','.join(str(x) for x in model_seed_list[0:model_num])
-    print(model_seed_list_string)
     model_seed_list.sort()
-    print("model seed list after sort: ")
-    model_seed_list_string = ','.join(str(x) for x in model_seed_list[0:model_num])
-    print(model_seed_list_string)
     return model_seed_list
 
 
