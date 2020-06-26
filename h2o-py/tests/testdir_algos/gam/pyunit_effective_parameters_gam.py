@@ -41,6 +41,8 @@ def test_gam_effective_parameters():
     assert gam.parms['fold_assignment']['input_value'] == 'AUTO'
     assert gam.parms['fold_assignment']['actual_value'] == 'AUTO'
 
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+
 
 if __name__ == "__main__":
     pyunit_utils.standalone_test(test_gam_effective_parameters)

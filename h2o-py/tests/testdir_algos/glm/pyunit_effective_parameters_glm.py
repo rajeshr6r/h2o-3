@@ -35,6 +35,8 @@ def test_glm_effective_parameters():
     assert glm.parms['fold_assignment']['input_value'] == 'AUTO'
     assert glm.parms['fold_assignment']['actual_value'] == 'AUTO'
 
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+
 if __name__ == "__main__":
   pyunit_utils.standalone_test(test_glm_effective_parameters)
 else:

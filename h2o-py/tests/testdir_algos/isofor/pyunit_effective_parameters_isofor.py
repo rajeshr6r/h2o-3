@@ -43,6 +43,8 @@ def test_isolation_forrest_effective_parameters():
     assert if1.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert if1.parms['categorical_encoding']['actual_value'] == 'AUTO'
 
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+
 if __name__ == "__main__":
   pyunit_utils.standalone_test(test_isolation_forrest_effective_parameters)
 else:

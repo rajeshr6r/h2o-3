@@ -80,6 +80,8 @@ def test_deep_learning_effective_parameters():
     assert dl1.parms['fold_assignment']['input_value'] == 'AUTO'
     assert dl1.parms['fold_assignment']['actual_value'] == dl2.parms['fold_assignment']['actual_value']
 
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+
 if __name__ == "__main__":
   pyunit_utils.standalone_test(test_deep_learning_effective_parameters)
 else:

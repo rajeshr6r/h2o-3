@@ -96,6 +96,8 @@ def test_gbm_effective_parameters():
     assert gbm.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert gbm.parms['categorical_encoding']['actual_value'] == 'Enum'
 
+    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+
 if __name__ == "__main__":
   pyunit_utils.standalone_test(test_gbm_effective_parameters)
 else:
