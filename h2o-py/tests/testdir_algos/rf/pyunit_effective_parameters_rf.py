@@ -19,7 +19,7 @@ from h2o.estimators.random_forest import H2ORandomForestEstimator
 
 
 def test_random_forrest_effective_parameters():
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
     frame = h2o.import_file(path=pyunit_utils.locate("smalldata/gbm_test/ecology_model.csv"))
     frame["Angaus"] = frame["Angaus"].asfactor()
     frame["Weights"] = h2o.H2OFrame.from_python(abs(np.random.randn(frame.nrow, 1)).tolist())[0]
@@ -63,7 +63,7 @@ def test_random_forrest_effective_parameters():
     assert rf1.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert rf1.parms['categorical_encoding']['actual_value'] == rf2.parms['categorical_encoding']['actual_value']
 
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", False)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false"))
     rf1 = H2ORandomForestEstimator(ntrees=100, distribution="bernoulli", min_rows=10, max_depth=5, weights_column="Weights",
                                    nfolds = 5, calibrate_model=True, calibration_frame=calib, seed = 1234)
     rf1.train(x=list(range(2, train.ncol)), y="Angaus", training_frame=train)
@@ -83,7 +83,7 @@ def test_random_forrest_effective_parameters():
     assert rf1.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert rf1.parms['categorical_encoding']['actual_value'] == 'AUTO'
 
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
 
 if __name__ == "__main__":
   pyunit_utils.standalone_test(test_random_forrest_effective_parameters)

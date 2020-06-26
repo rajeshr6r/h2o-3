@@ -44,7 +44,7 @@ def check_model_property(model_names, prop_name, present=True, actual_value=None
 
 
 def test_actual_default_input_stopping_rounds():
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
     train = h2o.import_file(path=pyunit_utils.locate("smalldata/extdata/australia.csv"))
     target = 'runoffnew'
     exclude_algos = ["DeepLearning", "GLM"]

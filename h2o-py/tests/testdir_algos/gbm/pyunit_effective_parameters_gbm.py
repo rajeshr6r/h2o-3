@@ -14,7 +14,7 @@ from h2o.estimators.gbm import H2OGradientBoostingEstimator
 #fold_assignment (available in: GBM, DRF, Deep Learning, GLM, Naïve-Bayes, K-Means, XGBoost)
 
 def test_gbm_effective_parameters():
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
     cars = h2o.import_file(path=pyunit_utils.locate("smalldata/junit/cars_20mpg.csv"))
     cars["economy_20mpg"] = cars["economy_20mpg"].asfactor()
     cars["year"] = cars["year"].asfactor()
@@ -58,7 +58,7 @@ def test_gbm_effective_parameters():
     assert gbm1.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert gbm1.parms['categorical_encoding']['actual_value'] == gbm2.parms['categorical_encoding']['actual_value']
 
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", False)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false"))
 
     gbm1 = H2OGradientBoostingEstimator(seed = 1234, nfolds=5)
     gbm1.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
@@ -80,7 +80,7 @@ def test_gbm_effective_parameters():
     assert gbm1.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert gbm1.parms['categorical_encoding']['actual_value'] == 'AUTO'
 
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
 
     frame = h2o.import_file(path=pyunit_utils.locate("smalldata/prostate/prostate.csv"))
     frame.pop('ID')
@@ -96,7 +96,7 @@ def test_gbm_effective_parameters():
     assert gbm.parms['categorical_encoding']['input_value'] == 'AUTO'
     assert gbm.parms['categorical_encoding']['actual_value'] == 'Enum'
 
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
 
 if __name__ == "__main__":
   pyunit_utils.standalone_test(test_gbm_effective_parameters)

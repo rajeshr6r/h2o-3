@@ -15,7 +15,7 @@ from h2o.estimators.kmeans import H2OKMeansEstimator
 
 
 def test_k_means_effective_parameters():
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
     cars = h2o.import_file(path=pyunit_utils.locate("smalldata/junit/cars_20mpg.csv"))
     cars["economy_20mpg"] = cars["economy_20mpg"].asfactor()
     cars["year"] = cars["year"].asfactor()
@@ -31,7 +31,7 @@ def test_k_means_effective_parameters():
     assert km1.parms['fold_assignment']['input_value'] == 'AUTO'
     assert km1.parms['fold_assignment']['actual_value'] == km2.parms['fold_assignment']['actual_value']
 
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", False)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false"))
     km1 = H2OKMeansEstimator(seed=1234, categorical_encoding="AUTO", nfolds=5)
     km1.train(x=["economy_20mpg", "displacement", "power", "weight", "acceleration", "year"], training_frame=cars)
 
@@ -40,7 +40,7 @@ def test_k_means_effective_parameters():
     assert km1.parms['fold_assignment']['input_value'] == 'AUTO'
     assert km1.parms['fold_assignment']['actual_value'] == 'AUTO'
 
-    h2o.backend.H2OCluster.set_feature_flag("enable_evaluation_of_auto_model_parameters", True)
+    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
 
 
 if __name__ == "__main__":
