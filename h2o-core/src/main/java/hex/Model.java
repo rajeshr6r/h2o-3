@@ -85,8 +85,6 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     return Boolean.parseBoolean(System.getProperty(EVAL_AUTO_PARAMS_ENABLED, "true"));
   }
 
-
-
   public void setInputParms(P _input_parms) {
     this._input_parms = _input_parms;
   }
