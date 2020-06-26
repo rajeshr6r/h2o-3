@@ -624,6 +624,8 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
             _parms._lambda_min_ratio *= 1e-2; // smalelr lambda min for ridge as we are starting quite high
         }
         _state.updateState(beta, ginfo);
+        if ((_parms._lambda != null) && _parms._lambda_search)
+          warn("lambda_search", "disabled when user specified any lambda value(s).");
         if (_parms._lambda == null) {  // no lambda given, we will base lambda as a fraction of lambda max
           if (_parms._lambda_search) {
             _parms._lambda = new double[_parms._nlambdas];
