@@ -10,6 +10,11 @@ public abstract class GamMojoModelBase extends MojoModel {
   double[] _numNAFills;
   boolean _meanImputation;
   double[] _beta;
+  double[] _beta_no_center;
+  double[] _beta_center;
+  double[][] _beta_multinomial;
+  double[][] _beta_multinomial_no_center; // coefficients not centered for multinomial/ordinal
+  double[][] _beta_multinomial_center; // coefficients not centered for multinomial/ordinal
   String _family;
   String[] _gam_columns;
   int[] _bs;
@@ -17,7 +22,14 @@ public abstract class GamMojoModelBase extends MojoModel {
   double[][] _knots;
   double[][][] _binvD;
   double[][][] _zTranspose;
-  String[][] _gamColNames;
+  String[][] _gamColNames;  // expanded gam column names
+  String[][] _gamColNamesCenter;
+  String[] _names_no_centering; // column names of features with no centering
+  int _totFeatureSize; // number of predictors plus gam columns no centered
+  int _betaSizePerClass;
+  int _betaCenterSizePerClass;
+  
+  public int get_totFeatureSize() { return _totFeatureSize;}
   
   GamMojoModelBase(String[] columns, String[][] domains, String responseColumn) {
     super(columns, domains, responseColumn);

@@ -19,18 +19,30 @@ public class GamMojoReader extends ModelMojoReader<GamMojoModelBase> {
     _model._catNAFills = readkv("catNAFills", new int[0]);
     _model._numNAFills = readkv("numNAFills", new double[0]);
     _model._meanImputation = readkv("mean_imputation", false);
-    _model._beta = readkv("beta");
+    _model._betaSizePerClass = readkv("beta length per class",0);
+    _model._betaCenterSizePerClass = readkv("beta center length per class", 0);
+    if ((_model._family == "multinomial") || (_model._family == "ordinal")) {
+      _model._beta_multinomial_no_center = read2DArray("beta_multinomial", _model._nclasses, _model._betaSizePerClass);
+      _model._beta_multinomial_center = read2DArray("beta_multinomial_centering", _model._nclasses, 
+              _model._betaCenterSizePerClass);
+    } else {
+      _model._beta_no_center = readkv("beta");
+      _model._beta_center = readkv("beta_center");
+    }
     _model._family = readkv("family");
     // read in GAM specific parameters
     _model._num_knots = readkv("num_knots");
     int num_gam_columns = _model._num_knots.length;
     _model._gam_columns = readStringArrays(num_gam_columns,"gam_columns");
+    _model._totFeatureSize = readkv("total feature size");
+    _model._names_no_centering = readStringArrays(_model._totFeatureSize, "_names_no_centering");
     _model._bs = readkv("bs");
     _model._knots = new double[num_gam_columns][];
     _model._binvD = new double[num_gam_columns][][];
     _model._zTranspose = new double[num_gam_columns][][];
     _model._knots = read2DArrayDiffLength("knots", _model._knots, _model._num_knots);
     _model._gamColNames = new String[num_gam_columns][];
+    _model._gamColNamesCenter = new String[num_gam_columns][];
     for (int gInd = 0; gInd < num_gam_columns; gInd++) {
       int num_knots = _model._num_knots[gInd];
       _model._binvD[gInd] = new double[num_knots-2][num_knots];
@@ -39,7 +51,8 @@ public class GamMojoReader extends ModelMojoReader<GamMojoModelBase> {
       _model._zTranspose[gInd] = new double[num_knots-1][num_knots];
       _model._zTranspose[gInd] = read2DArray(_model._gam_columns[gInd]+"_zTranspose", 
               _model._zTranspose[gInd].length, _model._zTranspose[gInd][0].length);
-      _model._gamColNames[gInd] = readStringArrays(num_knots-1,"gamColNames_"+_model._gam_columns[gInd]);
+      _model._gamColNames[gInd] = readStringArrays(num_knots,"gamColNames_"+_model._gam_columns[gInd]);
+      _model._gamColNamesCenter[gInd] = readStringArrays(num_knots-1,"gamColNamesCenter_"+_model._gam_columns[gInd]);
     }
     
     if (_model instanceof GamMojoModel) {
