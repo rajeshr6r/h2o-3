@@ -11,6 +11,7 @@ public class GamMojoMultinomialModel extends GamMojoModelBase {
     }
 
     void init() {
+        super.init();
         _multinomial = _family.equals("multinomial");
         _num_offset = _catOffsets[_cats];
     }

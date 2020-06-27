@@ -25,6 +25,15 @@ public class ArrayUtils {
     return sum;
   }
 
+  public static double[] eleDiff(final double[] from) {
+    int arryLen = from.length-1;
+    double[] cumsumR = new double[arryLen];
+    for (int index = 0; index < arryLen; index++) {
+      cumsumR[index] = from[index+1]-from[index];
+    }
+    return cumsumR;
+  }
+
   /**
    * Check to see if a column is a boolean column.  A boolean column should contains only two
    * levels and the string describing the domains should be true/false

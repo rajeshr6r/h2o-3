@@ -3,6 +3,7 @@ package hex.genmodel.easy;
 import hex.ModelCategory;
 import hex.genmodel.*;
 import hex.genmodel.algos.deeplearning.DeeplearningMojoModel;
+import hex.genmodel.algos.gam.GamMojoModelBase;
 import hex.genmodel.algos.glrm.GlrmMojoModel;
 import hex.genmodel.algos.targetencoder.TargetEncoderMojoModel;
 import hex.genmodel.algos.tree.SharedTreeMojoModel;
@@ -876,7 +877,10 @@ public class EasyPredictModelWrapper implements Serializable {
   }
 
   protected double[] fillRawData(RowData data, double[] rawData) throws PredictException {
-    if (data.size() < rawData.length) {
+    if ((data.size() < rawData.length) && (m instanceof GamMojoModelBase)) {  // need to add the expanded gam columns to data
+      GamMojoModelBase gamM = (GamMojoModelBase) m;
+      rawData = nanArray(gamM.get_totFeatureSize());  // expand the rawData array for non-center data
+      gamM.addExpandGamCols(rawData, data);
       return rawData;
     } else 
       return rowDataConverter.convert(data, rawData);

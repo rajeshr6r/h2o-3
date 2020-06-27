@@ -10,6 +10,7 @@ public class GamMojoModel extends GamMojoModelBase {
   }
   
   void init() {
+    super.init();
     _binomial = _family.equals("binomial");
   }
   

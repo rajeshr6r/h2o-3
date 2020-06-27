@@ -266,7 +266,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
     Frame adaptTrain() {
       int numGamFrame = _parms._gam_columns.length;
       _zTranspose = GamUtils.allocate3DArray(numGamFrame, _parms, firstOneLess);
-      _penalty_mat = _parms._savePenaltyMat?GamUtils.allocate3DArray(numGamFrame, _parms, sameOrig):null;
+      _penalty_mat = _parms._savePenaltyMat? GamUtils.allocate3DArray(numGamFrame, _parms, sameOrig):null;
       _penalty_mat_center = GamUtils.allocate3DArray(numGamFrame, _parms, bothOneLess);
       _binvD = GamUtils.allocate3DArray(numGamFrame, _parms, firstTwoLess);
       _numKnots = MemoryManager.malloc4(numGamFrame);
