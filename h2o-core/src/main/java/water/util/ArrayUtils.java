@@ -24,14 +24,14 @@ public class ArrayUtils {
     return cumsumR;
   }
 
-  public static double[] eleDiff(final double[] from) {
+/*  public static double[] eleDiff(final double[] from) {
     int arryLen = from.length-1;
     double[] cumsumR = new double[arryLen];
     for (int index = 0; index < arryLen; index++) {
       cumsumR[index] = from[index+1]-from[index];
     }
     return cumsumR;
-  }
+  }*/
   
   // Sum elements of an array
   public static long sum(final long[] from) {

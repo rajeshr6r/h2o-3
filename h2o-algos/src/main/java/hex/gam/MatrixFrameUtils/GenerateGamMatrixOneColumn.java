@@ -3,6 +3,7 @@ package hex.gam.MatrixFrameUtils;
 import hex.DataInfo;
 import hex.gam.GAMModel.GAMParameters;
 import hex.gam.GamSplines.CubicRegressionSplines;
+import hex.genmodel.algos.gam.GamUtilsCubicRegression;
 import hex.glm.GLMModel.GLMParameters.MissingValuesHandling;
 import hex.util.LinearAlgebraUtils.BMulInPlaceTask;
 import water.MRTask;
@@ -12,7 +13,7 @@ import water.fvec.NewChunk;
 import water.fvec.Vec;
 import water.util.ArrayUtils;
 
-import static hex.gam.MatrixFrameUtils.GamUtils.locateBin;
+import static hex.genmodel.algos.gam.GamUtilsCubicRegression.locateBin;
 
 public class GenerateGamMatrixOneColumn extends MRTask<GenerateGamMatrixOneColumn> {
   int _splineType;
@@ -50,9 +51,9 @@ public class GenerateGamMatrixOneColumn extends MRTask<GenerateGamMatrixOneColum
       double xval = chk[0].atd(rowIndex);
       int binIndex = locateBin(xval,_knots); // location to update
       // update from F matrix F matrix = [0;invB*D;0] and c functions
-      updateFMatrixCFunc(basisVals, xval, binIndex, crSplines, _bInvD);
+      GamUtilsCubicRegression.updateFMatrixCFunc(basisVals, xval, binIndex, _knots, crSplines._hj, _bInvD);
       // update from a+ and a- functions
-      updateAFunc(basisVals, xval, binIndex, crSplines);
+      GamUtilsCubicRegression.updateAFunc(basisVals, xval, binIndex, _knots, crSplines._hj);
       // copy updates to the newChunk row
       for (int colIndex = 0; colIndex < _numKnots; colIndex++) {
         newGamCols[colIndex].addNum(basisVals[colIndex]);
@@ -92,13 +93,13 @@ public class GenerateGamMatrixOneColumn extends MRTask<GenerateGamMatrixOneColum
     }
   }
 
-  public static void updateAFunc(double[] basisVals, double xval, int binIndex, CubicRegressionSplines splines) {
+/*  public static void updateAFunc(double[] basisVals, double xval, int binIndex, CubicRegressionSplines splines) {
     int jp1 = binIndex+1;
     basisVals[binIndex] += splines.gen_a_m_j(splines._knots[jp1], xval, splines._hj[binIndex]);
     basisVals[jp1] += splines.gen_a_p_j(splines._knots[binIndex], xval, splines._hj[binIndex]);
-  }
-
-  public static void updateFMatrixCFunc(double[] basisVals, double xval, int binIndex, CubicRegressionSplines splines,
+  }*/
+  
+/*  public static void updateFMatrixCFunc(double[] basisVals, double xval, int binIndex, CubicRegressionSplines splines,
                                         double[][] binvD) {
     int numKnots = basisVals.length;
     int matSize = binvD.length;
@@ -115,7 +116,7 @@ public class GenerateGamMatrixOneColumn extends MRTask<GenerateGamMatrixOneColum
         basisVals[index] = binvD[binIndexM1][index] * cmj+binvD[binIndex][index] * cpj;
       }
     }
-  }
+  }*/
 
   public Frame centralizeFrame(Frame fr, String colNameStart, GAMParameters parms) {
     generateZtransp(fr);

@@ -118,7 +118,7 @@ public class GamUtils {
     }
   }
 
-  public static int locateBin(double xval, double[] knots) {
+/*  public static int locateBin(double xval, double[] knots) {
     if (xval <= knots[0])  //small short cut
       return 0;
     int highIndex = knots.length-1;
@@ -142,7 +142,7 @@ public class GamUtils {
       count++;
     }
     return tryBin;
-  }
+  }*/
 
   public static int colIndexFromColNames(String[] colnames, String oneName) {
     int len = colnames.length;

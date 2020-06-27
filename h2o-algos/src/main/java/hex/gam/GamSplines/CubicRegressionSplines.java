@@ -4,6 +4,7 @@ import hex.gam.MatrixFrameUtils.TriDiagonalMatrix;
 import hex.util.LinearAlgebraUtils;
 import water.util.ArrayUtils;
 
+import static hex.genmodel.utils.ArrayUtils.eleDiff;
 import static hex.util.LinearAlgebraUtils.generateTriDiagMatrix;
 
 public class CubicRegressionSplines {
@@ -30,7 +31,7 @@ public class CubicRegressionSplines {
   public CubicRegressionSplines(int knotNum, double[] knots) {
     _knotNum = knotNum;
     _knots = knots;
-    _hj = ArrayUtils.eleDiff(_knots);
+    _hj = eleDiff(_knots);
   }
 
   public double[][] gen_BIndvD(double[] hj) {  // generate matrix bInvD
@@ -51,7 +52,7 @@ public class CubicRegressionSplines {
     return LinearAlgebraUtils.matrixMultiplyTriagonal(ArrayUtils.transpose(binvD), matrixD, false);
   }
 
-  public static double gen_a_m_j(double xjp1, double x, double hj) {
+/*  public static double gen_a_m_j(double xjp1, double x, double hj) {
     return (xjp1-x)/hj;
   }
 
@@ -69,5 +70,5 @@ public class CubicRegressionSplines {
     double t=(x-xj);
     double t3 = t*t*t;
     return ((t3/hj-t*hj)/6.0);
-  }
+  }*/
 }
