@@ -15,7 +15,6 @@ from h2o.estimators.xgboost import *
 def test_xgboost_effective_parameters():
     assert H2OXGBoostEstimator.available()
 
-    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
     prostate_frame = h2o.import_file(pyunit_utils.locate('smalldata/prostate/prostate.csv'))
     x = ['RACE']
     y = 'CAPSULE'
@@ -58,26 +57,27 @@ def test_xgboost_effective_parameters():
     assert xgb1.parms['categorical_encoding']['actual_value'] == xgb2.parms['categorical_encoding']['actual_value']
     assert xgb1.parms['fold_assignment']['input_value'] == 'AUTO'
     assert xgb1.parms['fold_assignment']['actual_value'] == xgb2.parms['fold_assignment']['actual_value']
+    
+    try:
+        h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false"))
+        xgb1 = H2OXGBoostEstimator(training_frame=training_frame, learn_rate=0.7, booster='gbtree', seed=1, ntrees=2, nfolds=5)
+        xgb1.train(x=x, y=y, training_frame=training_frame)
 
-    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "false"))
-    xgb1 = H2OXGBoostEstimator(training_frame=training_frame, learn_rate=0.7, booster='gbtree', seed=1, ntrees=2, nfolds=5)
-    xgb1.train(x=x, y=y, training_frame=training_frame)
-
-    xgb2 = H2OXGBoostEstimator(training_frame=training_frame, learn_rate=0.7, booster='gbtree', seed=1, ntrees=2, distribution="bernoulli",
+        xgb2 = H2OXGBoostEstimator(training_frame=training_frame, learn_rate=0.7, booster='gbtree', seed=1, ntrees=2, distribution="bernoulli",
                                categorical_encoding="OneHotInternal", nfolds=5, fold_assignment="Random")
-    xgb2.train(x=x, y=y, training_frame=training_frame)
+        xgb2.train(x=x, y=y, training_frame=training_frame)
 
-    assert xgb1.parms['distribution']['input_value'] == 'AUTO'
-    assert xgb1.parms['distribution']['actual_value'] == 'AUTO'
-    assert xgb1.logloss() == xgb2.logloss()
-    assert xgb1.parms['stopping_metric']['input_value'] == 'AUTO'
-    assert xgb1.parms['stopping_metric']['actual_value'] == 'AUTO'
-    assert xgb1.parms['categorical_encoding']['input_value'] == 'AUTO'
-    assert xgb1.parms['categorical_encoding']['actual_value'] == 'AUTO'
-    assert xgb1.parms['fold_assignment']['input_value'] == 'AUTO'
-    assert xgb1.parms['fold_assignment']['actual_value'] == 'AUTO'
-
-    h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
+        assert xgb1.parms['distribution']['input_value'] == 'AUTO'
+        assert xgb1.parms['distribution']['actual_value'] == 'AUTO'
+        assert xgb1.logloss() == xgb2.logloss()
+        assert xgb1.parms['stopping_metric']['input_value'] == 'AUTO'
+        assert xgb1.parms['stopping_metric']['actual_value'] == 'AUTO'
+        assert xgb1.parms['categorical_encoding']['input_value'] == 'AUTO'
+        assert xgb1.parms['categorical_encoding']['actual_value'] == 'AUTO'
+        assert xgb1.parms['fold_assignment']['input_value'] == 'AUTO'
+        assert xgb1.parms['fold_assignment']['actual_value'] == 'AUTO'
+    finally:
+        h2o.rapids("(setproperty \"{}\" \"{}\")".format("sys.ai.h2o.algos.evaluate_auto_model_parameters", "true"))
 
 
 if __name__ == "__main__":
