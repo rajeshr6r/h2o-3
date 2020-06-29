@@ -19,7 +19,7 @@ import water.runner.H2ORunner;
 import water.util.ArrayUtils;
 
 import static hex.gam.MatrixFrameUtils.GamUtils.equalColNames;
-import static hex.gam.MatrixFrameUtils.GamUtils.locateBin;
+import static hex.genmodel.algos.gam.GamUtilsCubicRegression.locateBin;
 import static hex.glm.GLMModel.GLMParameters.Family.*;
 import static hex.glm.GLMModel.GLMParameters.GLMType.gam;
 import static hex.glm.GLMModel.GLMParameters.GLMType.glm;

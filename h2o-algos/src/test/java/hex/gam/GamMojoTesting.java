@@ -21,62 +21,26 @@ import java.util.Random;
 @CloudSize(1)
 public class GamMojoTesting extends TestUtil {
   public static final double _tol = 1e-6;
-  // test and make sure the h2opredict, pojo and mojo predict agrees with multinomial dataset that includes
-  // both enum and numerical datasets
+  
+  // test and make sure the h2opredict, mojo predict agrees with binomial dataset that includes
+  // both enum and numerical datasets for the binomial family
   @Test
   public void testBinomialPredMojo() {
     try {
       Scope.enter();
-      CreateFrame cf = new CreateFrame();
-      Random generator = new Random();
-      int numRows = generator.nextInt(10000)+15000+200;
-      int numCols = generator.nextInt(17)+3;
-      cf.rows= numRows;
-      cf.cols = numCols;
-      cf.factors=10;
-      cf.has_response=true;
-      cf.response_factors = 2;
-      cf.positive_response=true;
-      cf.missing_fraction = 0;
-      cf.seed = 12345;
-      System.out.println("Createframe parameters: rows: "+numRows+" cols:"+numCols+" seed: "+cf.seed);
-      Frame trainBinomial = Scope.track(cf.execImpl().get());
-      SplitFrame sf = new SplitFrame(trainBinomial, new double[]{0.8,0.2}, new Key[] {Key.make("train.hex"), Key.make("test.hex")});
+      final Frame trainBinomial = Scope.track(createTrainTestFrame(2));
+      final SplitFrame sf = new SplitFrame(trainBinomial, new double[]{0.8,0.2}, new Key[] {Key.make("train.hex"), Key.make("test.hex")});
       sf.exec().get();
-      Key[] ksplits = sf._destination_frames;
-      Frame tr = DKV.get(ksplits[0]).get();
-      Frame te = DKV.get(ksplits[1]).get();
+      final Key[] ksplits = sf._destination_frames;
+      final Frame tr = DKV.get(ksplits[0]).get();
+      final Frame te = DKV.get(ksplits[1]).get();
       Scope.track(tr);
       Scope.track(te);
 
-      GAMModel.GAMParameters paramsO = new GAMModel.GAMParameters();
-      paramsO._train = tr._key;
-      paramsO._lambda_search = false;
-      paramsO._response_column = "response";
-      paramsO._lambda = new double[]{0};
-      paramsO._alpha = new double[]{0.001};  // l1pen
-      paramsO._objective_epsilon = 1e-6;
-      paramsO._beta_epsilon = 1e-4;
-      paramsO._standardize = false;
-      paramsO._family = GLMModel.GLMParameters.Family.binomial;
-      paramsO._link = GLMModel.GLMParameters.Link.logit;
-      int gamCount=0;
-      ArrayList<String> numericCols = new ArrayList<>();
-      String[] colNames = trainBinomial.names();
-      for (String cnames : colNames) {
-        if (trainBinomial.vec(cnames).isNumeric() && !trainBinomial.vec(cnames).isInt()) {
-          numericCols.add(cnames);
-          gamCount++;
-        }
-        if (gamCount >= 3)
-          break;
-      }
-      paramsO._gam_columns = new String[numericCols.size()];
-      paramsO._gam_columns =  numericCols.toArray(paramsO._gam_columns);
-      
-      GAMModel model = new GAM(paramsO).trainModel().get();
+      final GAMModel.GAMParameters paramsO =  buildGamParams(tr, GLMModel.GLMParameters.Family.binomial);
+      final GAMModel model = new GAM(paramsO).trainModel().get();
       Scope.track_generic(model);
-      Frame pred = model.score(te);
+      final Frame pred = model.score(te);
       Scope.track(pred);
       
       Assert.assertTrue(model.testJavaScoring(te, pred, _tol)); // compare scoring result with mojo
@@ -84,26 +48,43 @@ public class GamMojoTesting extends TestUtil {
       Scope.exit();
     }
   }
-
+  
+  // test and make sure the h2opredict, mojo predict agrees with multinomial dataset that includes
+  // both enum and numerical datasets for the multinomial family
   @Test
   public void testMultinomialPredMojo() {
     try {
       Scope.enter();
-      CreateFrame cf = new CreateFrame();
-      Random generator = new Random();
-      int numRows = generator.nextInt(10000)+15000+200;
-      int numCols = generator.nextInt(17)+3;
-      cf.rows= numRows;
-      cf.cols = numCols;
-      cf.factors=10;
-      cf.has_response=true;
-      cf.response_factors = 5;
-      cf.positive_response=true;
-      cf.missing_fraction = 0;
-      cf.seed = 12345;
-      System.out.println("Createframe parameters: rows: "+numRows+" cols:"+numCols+" seed: "+cf.seed);
-      Frame trainMultinomial = Scope.track(cf.execImpl().get());
+      final Frame trainMultinomial = Scope.track(createTrainTestFrame(5));
       SplitFrame sf = new SplitFrame(trainMultinomial, new double[]{0.8,0.2}, new Key[] {Key.make("train.hex"), 
+              Key.make("test.hex")});
+      sf.exec().get();
+      Key[] ksplits = sf._destination_frames;
+      final Frame tr = DKV.get(ksplits[0]).get();
+      final Frame te = DKV.get(ksplits[1]).get();
+      Scope.track(tr);
+      Scope.track(te);
+
+      final GAMModel.GAMParameters paramsO = buildGamParams(tr, GLMModel.GLMParameters.Family.multinomial);
+      final GAMModel model = new GAM(paramsO).trainModel().get();
+      Scope.track_generic(model);
+      final Frame pred = model.score(te);
+      Scope.track(pred);
+
+      Assert.assertTrue(model.testJavaScoring(te, pred, _tol)); // compare scoring result with mojo
+    } finally {
+      Scope.exit();
+    }
+  }
+
+  // test and make sure the h2opredict, mojo predict agrees with gaussian dataset that includes
+  // both enum and numerical datasets for the gaussian family
+  @Test
+  public void testGaussianPredMojo() {
+    try {
+      Scope.enter();
+      Frame trainGaussian = Scope.track(createTrainTestFrame(1));
+      SplitFrame sf = new SplitFrame(trainGaussian, new double[]{0.8,0.2}, new Key[] {Key.make("train.hex"),
               Key.make("test.hex")});
       sf.exec().get();
       Key[] ksplits = sf._destination_frames;
@@ -112,30 +93,7 @@ public class GamMojoTesting extends TestUtil {
       Scope.track(tr);
       Scope.track(te);
 
-      GAMModel.GAMParameters paramsO = new GAMModel.GAMParameters();
-      paramsO._train = tr._key;
-      paramsO._lambda_search = false;
-      paramsO._response_column = "response";
-      paramsO._lambda = new double[]{0};
-      paramsO._alpha = new double[]{0.001};  // l1pen
-      paramsO._objective_epsilon = 1e-6;
-      paramsO._beta_epsilon = 1e-4;
-      paramsO._standardize = false;
-      paramsO._family = GLMModel.GLMParameters.Family.multinomial;
-      int gamCount=0;
-      ArrayList<String> numericCols = new ArrayList<>();
-      String[] colNames = trainMultinomial.names();
-      for (String cnames : colNames) {
-        if (trainMultinomial.vec(cnames).isNumeric() && !trainMultinomial.vec(cnames).isInt()) {
-          numericCols.add(cnames);
-          gamCount++;
-        }
-        if (gamCount >= 3)
-          break;
-      }
-      paramsO._gam_columns = new String[numericCols.size()];
-      paramsO._gam_columns =  numericCols.toArray(paramsO._gam_columns);
-
+      GAMModel.GAMParameters paramsO = buildGamParams(tr, GLMModel.GLMParameters.Family.gaussian);
       GAMModel model = new GAM(paramsO).trainModel().get();
       Scope.track_generic(model);
       Frame pred = model.score(te);
@@ -145,5 +103,53 @@ public class GamMojoTesting extends TestUtil {
     } finally {
       Scope.exit();
     }
+  }
+  
+  public GAMModel.GAMParameters buildGamParams(Frame train, GLMModel.GLMParameters.Family fam) {
+    GAMModel.GAMParameters paramsO = new GAMModel.GAMParameters();
+    paramsO._train = train._key;
+    paramsO._lambda_search = false;
+    paramsO._response_column = "response";
+    paramsO._lambda = new double[]{0};
+    paramsO._alpha = new double[]{0.001};  // l1pen
+    paramsO._objective_epsilon = 1e-6;
+    paramsO._beta_epsilon = 1e-4;
+    paramsO._standardize = false;
+    paramsO._family = fam;
+    paramsO._gam_columns =  chooseGamColumns(train, 3);
+    return paramsO;
+  }
+
+  public String[] chooseGamColumns(Frame trainF, int maxGamCols) {
+    int gamCount=0;
+    ArrayList<String> numericCols = new ArrayList<>();
+    String[] colNames = trainF.names();
+    for (String cnames : colNames) {
+      if (trainF.vec(cnames).isNumeric() && !trainF.vec(cnames).isInt()) {
+        numericCols.add(cnames);
+        gamCount++;
+      }
+      if (gamCount >= maxGamCols)
+        break;
+    }
+    String[] gam_columns = new String[numericCols.size()];
+    return numericCols.toArray(gam_columns);
+  }
+  
+  public Frame createTrainTestFrame(int responseFactor) {
+    CreateFrame cf = new CreateFrame();
+    Random generator = new Random();
+    int numRows = generator.nextInt(10000)+15000+200;
+    int numCols = generator.nextInt(17)+3;
+    cf.rows= numRows;
+    cf.cols = numCols;
+    cf.factors=10;
+    cf.has_response=true;
+    cf.response_factors = responseFactor; // 1 for real-value response
+    cf.positive_response=true;
+    cf.missing_fraction = 0;
+    cf.seed = 12345;
+    System.out.println("Createframe parameters: rows: "+numRows+" cols:"+numCols+" seed: "+cf.seed);
+    return cf.execImpl().get();
   }
 }

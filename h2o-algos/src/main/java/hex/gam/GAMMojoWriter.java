@@ -59,7 +59,7 @@ public class GAMMojoWriter extends ModelMojoWriter<GAMModel, GAMModel.GAMParamet
     } else {
       writekv("beta", model._output._model_beta_no_centering); // beta without centering
       writekv("beta length per class", model._output._model_beta_no_centering.length);
-      writekv("beta center", model._output._model_beta);
+      writekv("beta_center", model._output._model_beta);
       writekv("beta center length per class", model._output._model_beta.length);
     }
     writekv("bs", model._parms._bs);  // an array of choice of spline functions
