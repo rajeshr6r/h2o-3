@@ -25,14 +25,14 @@ public class GamMojoModel extends GamMojoModelBase {
     double eta = 0.0;
     for (int i = 0; i < _catOffsets.length-1; ++i) {  // take care of contribution from categorical columns
       int ival = readCatVal(data[i], i);
-      if (ival < _catOffsets[i + 1])
+      if ((ival < _catOffsets[i + 1]) && (ival >= 0))
         eta += _beta[ival];
     }
 
     int noff = _catOffsets[_cats] - _cats;
     for(int i = _cats; i < _beta.length - 1 - noff; ++i)
       eta += _beta[noff + i] * data[i];
-    eta += _beta[_beta.length - 1]; // reduce intercept
+    eta += _beta[_beta.length - 1]; // add intercept
     double mu = evalLink(eta, _link);
 
     if (_binomial || _family.equals("fractionalbinomial") || _family.equals("negativebinomial")) {

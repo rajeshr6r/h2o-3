@@ -1495,7 +1495,7 @@ public class ArrayUtils {
     return res;
   }
 
-  public static double[] flat(double[][] arr) {
+/*  public static double[] flat(double[][] arr) {
     if (arr == null) return null;
     if (arr.length == 0) return null;
     int tlen = 0;
@@ -1509,7 +1509,7 @@ public class ArrayUtils {
       j += arr[i].length;
     }
     return result;
-  }
+  }*/
 
   public static Object[][] zip(Object[] a, Object[] b) {
     if (a.length != b.length) throw new IllegalArgumentException("Cannot zip arrays of different lengths!");

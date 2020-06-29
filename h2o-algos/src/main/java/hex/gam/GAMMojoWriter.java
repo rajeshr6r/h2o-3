@@ -22,15 +22,23 @@ public class GAMMojoWriter extends ModelMojoWriter<GAMModel, GAMModel.GAMParamet
 
   @Override
   protected void writeModelData() throws IOException {
+    int numGamCols = model._parms._gam_columns.length;
     writekv("use_all_factor_levels", model._parms._use_all_factor_levels);
     writekv("cats", model._output._dinfo._cats);
     writekv("cat_offsets", model._output._dinfo._catOffsets);
-    writekv("nums", model._output._dinfo._nums);
+    writekv("numsCenter", model._output._dinfo._nums);
+    writekv("num", model._output._dinfo._nums+numGamCols);
 
     boolean imputeMeans = model._parms.missingValuesHandling().equals(GLMModel.GLMParameters.MissingValuesHandling.MeanImputation);
     writekv("mean_imputation", imputeMeans);
     if (imputeMeans) {
-      writekv("numNAFills", model._output._dinfo.numNAFill());
+      writekv("numNAFillsCenter", model._output._dinfo.numNAFill());
+      double[] numNAFills = new double[model._output._dinfo.numNAFill().length+numGamCols];
+      System.arraycopy(model._output._dinfo.numNAFill(),0, numNAFills, 0, 
+              model._output._dinfo.numNAFill().length);
+      int startind = numNAFills.length-model._gamColMeans.length;
+      System.arraycopy(model._gamColMeans, 0, numNAFills, startind, model._gamColMeans.length);
+      writekv("numNAFills", numNAFills);
       writekv("catNAFills", model._output._dinfo.catNAFill());
     }
     writekv("family", model._parms._family);
@@ -42,7 +50,7 @@ public class GAMMojoWriter extends ModelMojoWriter<GAMModel, GAMModel.GAMParamet
     writeStringArrays(model._parms._gam_columns, "gam_columns"); // gam_columns specified by users
     int numGamLength = 0;
     int numGamCLength = 0;
-    for (int cInd=0; cInd < model._parms._gam_columns.length; cInd++)  { // only contains expanded gam column names not centered
+    for (int cInd=0; cInd < numGamCols; cInd++)  { // only contains expanded gam column names not centered
       writeStringArrays(model._gamColNames[cInd], "gamColNamesCenter_"+model._parms._gam_columns[cInd]);
       writeStringArrays(model._gamColNamesNoCentering[cInd], "gamColNames_"+model._parms._gam_columns[cInd]);
       numGamLength += model._gamColNamesNoCentering[cInd].length;

@@ -12,7 +12,9 @@ public abstract class GamMojoModelBase extends MojoModel {
   int[] _catNAFills;
   int[] _catOffsets;
   int _nums;
+  int _numsCenter;
   double[] _numNAFills;
+  double[] _numNAFillsCenter;
   boolean _meanImputation;
   double[] _beta;
   double[] _beta_no_center;
@@ -66,8 +68,14 @@ public abstract class GamMojoModelBase extends MojoModel {
   private void imputeMissingWithMeans(double[] data) {
     for (int ind=0; ind < _cats; ind++)
       if (Double.isNaN(data[ind])) data[ind] = _catNAFills[ind];
-    for (int ind=0; ind < _nums; ind++)
-      if (Double.isNaN(data[ind+_cats])) data[ind] = _numNAFills[ind];
+
+    if (data.length == nfeatures()) { // using centered gam cols, nfeatures denotes centered gam columns
+      for (int ind = 0; ind < _numsCenter; ind++)
+        if (Double.isNaN(data[ind + _cats])) data[ind] = _numNAFillsCenter[ind];
+    } else {
+      for (int ind = 0; ind < _nums; ind++)
+        if (Double.isNaN(data[ind + _cats])) data[ind] = _numNAFills[ind];
+    }
   }
   
   double evalLink(double val, String linkType) {

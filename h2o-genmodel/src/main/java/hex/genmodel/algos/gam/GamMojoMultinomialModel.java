@@ -27,7 +27,7 @@ public class GamMojoMultinomialModel extends GamMojoModelBase {
         for (int c=0; c<_nclasses; ++c) {
             for (int i = 0; i < _catOffsets.length-1; ++i) {  // take care of contribution from categorical columns
                 int ival = readCatVal(row[i], i);
-                if (ival < _catOffsets[i + 1])
+                if ((ival < _catOffsets[i + 1]) && (ival >= 0))
                     preds[c+1] += _beta_multinomial[c][ival];
             }
             
