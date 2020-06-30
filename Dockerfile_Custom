@@ -55,6 +55,9 @@ EXPOSE 54322
 
 #ENTRYPOINT ["java", "-Xmx4g", "-jar", "/opt/h2o.jar"]
 # Define default command
+cd opt/
+java -Xmx1g -jar h2o.jar
+
 
 CMD \
   ["/bin/bash"]
